@@ -1,27 +1,17 @@
-pub const table = @import("table.zig");
-pub const style = @import("style.zig");
-pub const util = @import("util.zig");
+const std = @import("std");
+const table = @import("salon").table;
 
-test {
-    @import("std").testing.refAllDecls(@This());
-}
-
-test "table + style" {
-    const std = @import("std");
+pub fn main() !void {
+    std.debug.print("----------------------------------------\n", .{});
+    std.debug.print("example/table.zig:\n", .{});
     const a = std.heap.page_allocator;
-    const s = style.Style.init(.{ .allocator = a });
     var t = table.Table.init(.{
         .allocator = a,
         .style = .single,
         .padding = .{ 1, 0 },
     });
 
-    t.headers(&[_][]const u8{
-        s.red().format("Name"),
-        s.blue().format("Age"),
-        s.green().format("Height"),
-        s.yellow().format("Weight"),
-    });
+    t.headers(&[_][]const u8{ "Name", "Age", "Height", "Weight" });
     try t.row(&[_][]const u8{
         "Alice",
         "25",
