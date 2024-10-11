@@ -1,33 +1,39 @@
 const std = @import("std");
 const util = @import("util.zig");
 
-pub const RGB = struct {
+pub const Color = union(enum) {
+    @"4": Color4,
+    rgb: ColorRGB,
+};
+
+pub const Color4 = enum(u7) {
+    black = 30,
+    red = 31,
+    green = 32,
+    yellow = 33,
+    blue = 34,
+    magenta = 35,
+    cyan = 36,
+    white = 37,
+    default = 39,
+    bright_black = 90,
+    bright_red = 91,
+    bright_green = 92,
+    bright_yellow = 93,
+    bright_blue = 94,
+    bright_magenta = 95,
+    bright_cyan = 96,
+    bright_white = 97,
+};
+
+pub const ColorRGB = struct {
     r: u8,
     g: u8,
     b: u8,
 
-    pub fn el(self: @This(), other: @This()) bool {
-        return std.meta.eql(RGB, self, other);
+    pub fn eql(self: @This(), other: @This()) bool {
+        return std.meta.eql(ColorRGB, self, other);
     }
-};
-
-pub const Color = enum {
-    black,
-    red,
-    green,
-    yellow,
-    blue,
-    magenta,
-    cyan,
-    white,
-    bright_black,
-    bright_red,
-    bright_green,
-    bright_yellow,
-    bright_blue,
-    bright_magenta,
-    bright_cyan,
-    bright_white,
 };
 
 pub const Style = struct {
@@ -96,6 +102,26 @@ pub const Style = struct {
         @memcpy(result[(self.fg.len + self.bg.len + input.len)..], _reset);
 
         return result;
+    }
+
+    pub fn begin(self: *const Style) []const u8 {
+        const total_length = self.fg.len + self.bg.len;
+        var result = self.allocator.alloc(u8, total_length) catch {
+            return &[_]u8{};
+        };
+
+        @memcpy(result[0..self.fg.len], self.fg);
+        @memcpy(result[self.fg.len..], self.bg);
+
+        return result;
+    }
+
+    pub fn end(_: *const Style) []const u8 {
+        return _reset;
+    }
+
+    pub fn reset() []const u8 {
+        return _reset;
     }
 
     pub fn black(self: *const Style) Style {
@@ -255,36 +281,69 @@ test "produces printable data" {
     var b: [128]u8 = undefined;
     var s = Style.init(.{});
 
-    try t.expectEqualDeep(
-        std.fmt.bufPrint(&b, "{s}", s.black().text("TEST")) catch unreachable,
+    try t.expect(std.mem.eql(
+        u8,
+        try std.fmt.bufPrint(&b, "{s}", s.black().text("TEST")),
         "\x1b[30mTEST\x1b[0m",
-    );
-    try t.expectEqualDeep(
-        std.fmt.bufPrint(&b, "{s}", s.red().text("TEST")) catch unreachable,
+    ));
+    try t.expect(std.mem.eql(
+        u8,
+        try std.fmt.bufPrint(&b, "{s}", s.red().text("TEST")),
         "\x1b[31mTEST\x1b[0m",
-    );
-    try t.expectEqualDeep(
-        std.fmt.bufPrint(&b, "{s}", s.green().text("TEST")) catch unreachable,
+    ));
+    try t.expect(std.mem.eql(
+        u8,
+        try std.fmt.bufPrint(&b, "{s}", s.green().text("TEST")),
         "\x1b[32mTEST\x1b[0m",
-    );
-    try t.expectEqualDeep(
-        std.fmt.bufPrint(&b, "{s}", s.yellow().text("TEST")) catch unreachable,
+    ));
+    try t.expect(std.mem.eql(
+        u8,
+        try std.fmt.bufPrint(&b, "{s}", s.yellow().text("TEST")),
         "\x1b[33mTEST\x1b[0m",
-    );
-    try t.expectEqualDeep(
-        std.fmt.bufPrint(&b, "{s}", s.blue().text("TEST")) catch unreachable,
+    ));
+    try t.expect(std.mem.eql(
+        u8,
+        try std.fmt.bufPrint(&b, "{s}", s.blue().text("TEST")),
         "\x1b[34mTEST\x1b[0m",
-    );
-    try t.expectEqualDeep(
-        std.fmt.bufPrint(&b, "{s}", s.magenta().text("TEST")) catch unreachable,
+    ));
+    try t.expect(std.mem.eql(
+        u8,
+        try std.fmt.bufPrint(&b, "{s}", s.magenta().text("TEST")),
         "\x1b[35mTEST\x1b[0m",
-    );
-    try t.expectEqualDeep(
-        std.fmt.bufPrint(&b, "{s}", s.cyan().text("TEST")) catch unreachable,
-        "\x1b[36mTEST\x1b[0m",
-    );
-    try t.expectEqualDeep(
-        std.fmt.bufPrint(&b, "{s}", s.white().text("TEST")) catch unreachable,
-        "\x1b[37mTEST\x1b[0m",
-    );
+    ));
+    try t.expect(std.mem.eql(
+        u8,
+        try std.fmt.bufPrint(&b, "{s}", s.cyan().text("TEST")),
+        "\x1b[36mTEST\x1b[0m"[0..],
+    ));
+    try t.expect(std.mem.eql(
+        u8,
+        try std.fmt.bufPrint(&b, "{s}", s.white().text("TEST")),
+        "\x1b[37mTEST\x1b[0m"[0..],
+    ));
+}
+
+test "can be enabled and disabled" {
+    const t = std.testing;
+    var b: [128]u8 = undefined;
+    var s = Style.init(.{});
+
+    try t.expect(std.mem.eql(
+        u8,
+        try std.fmt.bufPrint(&b, "{s}TEST{s}", .{ s.black().begin(), s.end() }),
+        "\x1b[30mTEST\x1b[0m",
+    ));
+    try t.expect(std.mem.eql(
+        u8,
+        try std.fmt.bufPrint(&b, "{s}TEST{s}", .{ s.red().begin(), s.end() }),
+        "\x1b[31mTEST\x1b[0m",
+    ));
+    try t.expect(std.mem.eql(
+        u8,
+        try std.fmt.bufPrint(&b, "{s}TEST{s}", .{
+            s.green().onBlue().begin(),
+            s.end(),
+        }),
+        "\x1b[32m\x1b[44mTEST\x1b[0m",
+    ));
 }

@@ -32,6 +32,17 @@ pub fn build(b: *std.Build) void {
         b.installArtifact(exe);
     }
 
+    {
+        const exe = b.addExecutable(.{
+            .name = "all",
+            .root_source_file = b.path("example/all.zig"),
+            .target = target,
+            .optimize = optimize,
+        });
+        exe.root_module.addImport("salon", salon_mod);
+        b.installArtifact(exe);
+    }
+
     const lib = b.addStaticLibrary(.{
         .name = "salon",
         .root_source_file = b.path("lib/root.zig"),

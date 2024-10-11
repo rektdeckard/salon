@@ -3,14 +3,14 @@ const table = @import("salon").table;
 
 pub fn main() !void {
     std.debug.print("----------------------------------------\n", .{});
-    std.debug.print("example/table.zig:\n", .{});
+    std.debug.print("example/table.zig:\n\n", .{});
+
     const a = std.heap.page_allocator;
     var t = table.Table.init(.{
         .allocator = a,
         .style = .single,
         .padding = .{ 1, 0 },
     });
-
     t.headers(&[_][]const u8{ "Name", "Age", "Height", "Weight" });
     try t.row(&[_][]const u8{
         "Alice",
@@ -42,6 +42,5 @@ pub fn main() !void {
         "5'5\"",
         "140 lbs",
     });
-
     try t.print(std.io.getStdErr());
 }

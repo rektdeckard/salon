@@ -154,6 +154,15 @@ pub const Table = struct {
         self.rows[self.rows.len - 1] = r;
     }
 
+    // pub fn arow(self: *Table, tuple: anytype) !void {
+    //     const tuple_len = @typeInfo(@TypeOf(tuple)).Tuple.fields.len;
+    //     var slice: [tuple_len][]const u8 = undefined;
+    //     inline for (tuple, 0..) |value, i| {
+    //         slice[i] = value;
+    //     }
+    //     try self.row(slice);
+    // }
+
     pub fn print(self: *Table, f: std.fs.File) !void {
         var writer = std.io.bufferedWriter(f.writer());
         var w = writer.writer();

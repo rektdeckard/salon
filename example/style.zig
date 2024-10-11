@@ -3,7 +3,7 @@ const style = @import("salon").style;
 
 pub fn main() !void {
     std.debug.print("----------------------------------------\n", .{});
-    std.debug.print("example/style.zig:\n", .{});
+    std.debug.print("example/style.zig:\n\n", .{});
     const s = style.Style.init(.{});
 
     std.debug.print(
@@ -128,6 +128,16 @@ pub fn main() !void {
             s.black().onBlue().format("B"),
             s.black().onMagenta().format("O"),
             s.black().onWhite().format("W"),
+        },
+    );
+
+    std.debug.print(
+        "{s}TEST {s}THIS{s} THING{s} WORKS\n",
+        .{
+            s.blue().begin(),
+            s.yellow().begin(),
+            s.green().begin(),
+            style.Style.reset(),
         },
     );
 }
