@@ -42,7 +42,8 @@ pub const Style = struct {
     const _dim = "\x1b[2m";
     const _italic = "\x1b[3m";
     const _underline = "\x1b[4m";
-    const _blink = "\x1b[5m";
+    const _blink_slow = "\x1b[5m";
+    const _blink_fast = "\x1b[6m";
     const _reverse = "\x1b[7m";
     const _hidden = "\x1b[8m";
     const _strike = "\x1b[9m";
@@ -66,6 +67,14 @@ pub const Style = struct {
     allocator: std.mem.Allocator = std.heap.page_allocator,
     fg: []const u8 = "",
     bg: []const u8 = "",
+    bold: bool = false,
+    dim: bool = false,
+    italic: bool = false,
+    underline: bool = false,
+    blink: bool = false,
+    reverse: bool = false,
+    hidden: bool = false,
+    strike: bool = false,
 
     pub const Printable = struct {
         data: []const u8,
@@ -78,11 +87,27 @@ pub const Style = struct {
         allocator: std.mem.Allocator = std.heap.page_allocator,
         fg: []const u8 = "",
         bg: []const u8 = "",
+        bold: bool = false,
+        dim: bool = false,
+        italic: bool = false,
+        underline: bool = false,
+        blink: bool = false,
+        reverse: bool = false,
+        hidden: bool = false,
+        strike: bool = false,
     }) Style {
         return Style{
             .allocator = options.allocator,
             .fg = options.fg,
             .bg = options.bg,
+            .bold = options.bold,
+            .dim = options.dim,
+            .italic = options.italic,
+            .underline = options.underline,
+            .blink = options.blink,
+            .reverse = options.reverse,
+            .hidden = options.hidden,
+            .strike = options.strike,
         };
     }
 
